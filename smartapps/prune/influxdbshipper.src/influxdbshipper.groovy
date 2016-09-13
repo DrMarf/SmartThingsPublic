@@ -56,7 +56,7 @@ preferences {
 
     section ("Influxdb URL...") {
         input "influxdb_url", "text", title: "Influxdb URL"
-        input "influxdb_proto", "enum", title: "Protocol (http or https)", options: ["HTTP", "HTTPS"]
+        input "influxdb_proto", "enum", title: "Protocol (http or https)", options: ["http", "https"]
         input "influxdb_db", "text", title: "Influxdb DB"
         input "influxdb_login", "text", title: "Influxdb Login"
         input "influxdb_password", "password", title: "Influxdb Password"
