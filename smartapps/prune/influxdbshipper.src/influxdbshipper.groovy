@@ -52,6 +52,13 @@ preferences {
         input "energy", "capability.energyMeter", title: "Energy", required: false, multiple: true
         input "power", "capability.powerMeter", title: "Power", required: false, multiple: true
         input "smoke", "capability.smokeDetector", title: "Smoke", required: false, multiple: true
+        
+        input "dimmers", "capability.switch", title: "switchLevel", required: false, multiple: true
+        input "heatingpoint", "capability.thermostatHeatingSetpoint", title: "Heating Setpoint", required: false, multiple: true
+        input "coolingpoint", "capability.thermostatCoolingSetpoint", title: "Cooling Setpoint", required: false, multiple: true
+        input "thermostatOperatingState", "capability.thermostatOperatingState", title: "Thermostat Operating State", required: false, multiple: true
+        input "illuminanceMeasurement", "capability.illuminanceMeasurement", title: "Illuminance Measurement", required: false, multiple: true
+        input "signalStrength", "capability.signalStrength", title: "Signal Strength", required: false, multiple: true
     }
 
     section ("Influxdb URL...") {
@@ -146,6 +153,47 @@ def updateCurrentStats() {
         // 0="clear" 1="detected" 2="tested"
         def smokeState = val.currentState("smoke").value == "detected" ? 1 : 0
         full_body += "smoke,sensor=${sensorName} value=${smokeState} \n"
+        }
+    dimmers.eachWithIndex{ val, idx -> 
+    	def sensorName = val.displayName.replaceAll(" ",'\\\\ ')
+        full_body += "dimmer,sensor=${sensorName} value=${val.currentState("level").value} \n"
+        }
+    heatingpoint.eachWithIndex{ val, idx -> 
+    	def sensorName = val.displayName.replaceAll(" ",'\\\\ ')
+        full_body += "heatingpoint,sensor=${sensorName} value=${val.currentState("heatingSetpoint").value} \n"
+        }
+    coolingpoint.eachWithIndex{ val, idx -> 
+    	def sensorName = val.displayName.replaceAll(" ",'\\\\ ')
+        full_body += "coolingpoint,sensor=${sensorName} value=${val.currentState("coolingSetpoint").value} \n"
+        }
+    thermostatOperatingState.eachWithIndex{ val, idx -> 
+    	def sensorName = val.displayName.replaceAll(" ",'\\\\ ')
+        def thermState
+        //log.info val.currentState("thermostatOperatingState").value
+		switch (val.currentState("thermostatOperatingState").value) {
+        case 'heating':
+            thermState = 6
+            break
+        case 'pending heat':
+            thermState = 5
+            break
+        case 'idle':
+            thermState = 4
+            break
+        case 'fan only':
+            thermState = 3
+            break
+        case 'pending cool':
+            thermState = 2
+            break
+        case 'cooling':
+            thermState = 1
+            break
+        default:
+            thermState = 0
+            break
+    	}
+        full_body += "thermostatOperatingState,sensor=${sensorName} value=${thermState} \n"
         }
     def params = [
         uri: full_url,
